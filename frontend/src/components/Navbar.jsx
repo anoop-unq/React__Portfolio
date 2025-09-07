@@ -442,7 +442,9 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
                   e.preventDefault();
                   if (!item.id === 'home') {
                     scrollToSection('home');
-                  } else {
+                  }
+                 
+                   else {
                     // For other sections, navigate to the route
                     window.location.href = item.path;
                   }
