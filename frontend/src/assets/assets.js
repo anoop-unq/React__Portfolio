@@ -52,6 +52,21 @@ import k5 from './k5.png'
 import p1 from './p1.png'
 import p2 from './p2.png'
 import p3 from './p3.png'
+import vote1 from './vote1.png'
+import vote2 from './vote2.png'
+import vote3 from './vote3.png'
+import vote4 from './vote4.png'
+import vote5 from './vote5.png'
+import lib1 from './lib1.png'
+import lib2 from './lib2.png'
+import lib3 from './lib3.png'
+import lib4 from './lib4.png'
+import lib5 from './lib5.png'
+import pdf1 from './pdf1.png'
+import pdf2 from './pdf2.png'
+import pdf3 from './pdf3.png'
+import pdf4 from './pdf4.png'
+import pdf5 from './pdf5.png'
 
 export const assets = {
     anoopanvesh,
@@ -106,5 +121,20 @@ export const assets = {
     k5,
     p1,
     p2,
-    p3
+    p3,
+    vote1,
+    vote2,
+    vote3,
+    vote4,
+    vote5,
+    lib1,
+    lib2,
+    lib3,
+    lib4,
+    lib5,
+    pdf1,
+    pdf2,
+    pdf3,
+    pdf4,
+    pdf5,
 }

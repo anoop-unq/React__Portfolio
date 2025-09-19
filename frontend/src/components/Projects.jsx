@@ -336,7 +336,7 @@ const Projects = ({ darkMode }) => {
         assets.clinc4,
         assets.clinc5,
       ],
-      liveLink: "https://dentalclinic-web.netlify.app/",
+      liveLink: "https://dentalclinichyd.netlify.app/",
     },
     {
       id: 4,
@@ -409,7 +409,31 @@ const Projects = ({ darkMode }) => {
       images: [assets.t1, assets.t20, assets.t3, assets.t4, assets.t5],
       liveLink: "https://task-manager-mern-app-navy.vercel.app/",
     },
+     {
+      id: 13,
+      title: "Vote Poling System",
+      description:"Voting poll system built with the MERN stack, allowing users to create polls, cast votes, view results in chart form, and delete polls after results are finalized.",
+      images: [assets.vote1, assets.vote2, assets.vote3, assets.vote4, assets.vote5],
+      liveLink: "https://mern-vote-seven.vercel.app/",
+    },
+     {
+      id: 14,
+      title: "Library Management System",
+      description:
+      "A MERN-based library system with admin and user panels. Admins can manage books and track user activity, while users can borrow and return books through full CRUD functionality.",
+      images: [assets.lib1, assets.lib2, assets.lib3, assets.lib4, assets.lib5],
+      liveLink: "https://library-g.vercel.app/login",
+    },
+     {
+      id: 15,
+      title: "Resume Uploader",
+      description:"A MERN-based PDF uploader application where users can upload, view, edit, and delete PDF files, with full CRUD functionality and the ability to add details like title, description, and upload date",
+      images: [assets.pdf1, assets.pdf2, assets.pdf3, assets.pdf4, assets.pdf5],
+      liveLink: "https://mern-pdf-gilt.vercel.app/",
+    },
   ];
+
+  
 
   // Check if device is mobile
   useEffect(() => {
