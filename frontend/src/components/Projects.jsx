@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiExternalLink, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiExternalLink, FiChevronLeft, FiChevronRight, FiX, FiMaximize2, FiLayers } from "react-icons/fi";
 import { assets } from "../assets/assets.js";
 
 // Import tool icons
@@ -12,33 +12,81 @@ import {
   SiExpress, SiMongodb, SiTailwindcss, SiFramer, SiSequelize
 } from 'react-icons/si';
 
+// --- OPTIMIZED IMAGE COMPONENT ---
+const ImageWithLoader = ({ src, alt, className, onClick, priority = false }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  return (
+    <div className={`relative overflow-hidden bg-gray-100 dark:bg-gray-800 ${className}`}>
+      {!isLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        loading={priority ? "eager" : "lazy"}
+        onClick={onClick}
+        onLoad={() => setIsLoaded(true)}
+        className={`w-full h-full object-cover transition-all duration-700 ease-out ${
+          isLoaded ? 'opacity-100 blur-0 scale-100' : 'opacity-0 blur-lg scale-105'
+        } ${onClick ? 'cursor-pointer hover:scale-105' : ''}`}
+      />
+    </div>
+  );
+};
+
 const Projects = ({ darkMode }) => {
   const [activeIndices, setActiveIndices] = useState({});
   const sectionRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
   
-  // New State for Tabs
+  // Tabs State
   const [activeTab, setActiveTab] = useState('website');
+
+  // Lightbox State
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImages, setLightboxImages] = useState([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Tool icons mapping
   const toolIcons = {
-    html: { icon: FaHtml5, color: 'text-orange-500', bg: 'bg-orange-500' },
-    css: { icon: FaCss3Alt, color: 'text-blue-500', bg: 'bg-blue-500' },
-    javascript: { icon: FaJs, color: 'text-yellow-500', bg: 'bg-yellow-500' },
-    react: { icon: FaReact, color: 'text-blue-400', bg: 'bg-blue-400' },
-    nodejs: { icon: FaNodeJs, color: 'text-green-600', bg: 'bg-green-600' },
-    express: { icon: SiExpress, color: 'text-white-900', bg: 'bg-green-100' },
-    mongodb: { icon: SiMongodb, color: 'text-green-500', bg: 'bg-green-500' },
-    tailwind: { icon: SiTailwindcss, color: 'text-teal-400', bg: 'bg-teal-400' },
-    bootstrap: { icon: FaBootstrap, color: 'text-purple-500', bg: 'bg-purple-500' },
-    framer: { icon: SiFramer, color: 'text-pink-500', bg: 'bg-pink-500' },
-    git: { icon: FaGitAlt, color: 'text-red-500', bg: 'bg-red-500' },
-    database: { icon: FaDatabase, color: 'text-blue-600', bg: 'bg-blue-600' },
-    python: { icon: FaPython, color: 'text-blue-700', bg: 'bg-blue-700' },
-    sequelize: { icon: SiSequelize, color: 'text-blue-300', bg: 'bg-blue-300' },
-    design: { icon: FaPaintBrush, color: 'text-pink-400', bg: 'bg-pink-400' },
-    api: { icon: FaDatabase, color: 'text-gray-500', bg: 'bg-gray-500' } // Added generic for API
+    html: { icon: FaHtml5, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    css: { icon: FaCss3Alt, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    javascript: { icon: FaJs, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
+    react: { icon: FaReact, color: 'text-blue-400', bg: 'bg-blue-400/10' },
+    nodejs: { icon: FaNodeJs, color: 'text-green-600', bg: 'bg-green-600/10' },
+    express: { icon: SiExpress, color: 'text-gray-500', bg: 'bg-gray-100' },
+    mongodb: { icon: SiMongodb, color: 'text-green-500', bg: 'bg-green-500/10' },
+    tailwind: { icon: SiTailwindcss, color: 'text-teal-400', bg: 'bg-teal-400/10' },
+    bootstrap: { icon: FaBootstrap, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    framer: { icon: SiFramer, color: 'text-pink-500', bg: 'bg-pink-500/10' },
+    git: { icon: FaGitAlt, color: 'text-red-500', bg: 'bg-red-500/10' },
+    database: { icon: FaDatabase, color: 'text-blue-600', bg: 'bg-blue-600/10' },
+    python: { icon: FaPython, color: 'text-blue-700', bg: 'bg-blue-700/10' },
+    sequelize: { icon: SiSequelize, color: 'text-blue-300', bg: 'bg-blue-300/10' },
+    design: { icon: FaPaintBrush, color: 'text-pink-400', bg: 'bg-pink-400/10' },
+    figma: { icon: FaFigma, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    api: { icon: FaDatabase, color: 'text-gray-500', bg: 'bg-gray-500/10' }
   };
+
+  // --- FIGMA PROJECTS DATA ---
+  const figmaProjects = [
+    {
+      id: 101, 
+      title: "Adit (Audit Dashboard)",
+      description: "A premium Figma-to-Code conversion project charged at ₹10,000 for its complexity and precision. I delivered 100% pixel-perfect accuracy, matching every color gradient, button state, and layout model exactly as provided in the design files. It features a fully responsive implementation of static data with a professional, natural feel.",
+      liveLink: "https://audit-ruby-one.vercel.app/",
+      images: [assets.figmaD1, assets.figmaD2, assets.figmaD3, assets.figmaD4, assets.figmaD5],
+      mobileThumbnails: [
+        assets.figmaA1, assets.figmaA2, assets.figmaA3, assets.figmaA4, 
+        assets.figmaA5, assets.figmaA6, assets.figmaA7, assets.figmaA8, assets.figmaA9
+      ],
+      // UPDATED: Removed UI/UX, Added CSS as requested
+      tools: ['figma', 'react', 'css'] 
+    },
+  ];
 
   const projects = [
     {
@@ -163,57 +211,56 @@ const Projects = ({ darkMode }) => {
     },
   ];
 
-  // Tool name mapping for display
   const toolNames = {
     html: 'HTML5', css: 'CSS3', javascript: 'JavaScript', react: 'React',
     nodejs: 'Node.js', express: 'Express', mongodb: 'MongoDB', tailwind: 'Tailwind',
     bootstrap: 'Bootstrap', framer: 'Framer Motion', git: 'Git', database: 'Database',
-    python: 'Python', sequelize: 'Sequelize', design: 'UI/UX Design', api: 'API Integration'
+    python: 'Python', sequelize: 'Sequelize', design: 'UI/UX Design', api: 'API Integration',
+    figma: 'Figma to Code'
   };
 
-  // --- FILTERING LOGIC ---
   const filterMap = {
     'website': [1, 8, 9, 10, 11, 13, 14],
-    'figma': [],
+    'figma': [], 
     'full stack': [2, 3, 4, 5, 6],
-    'front end': [7, 10, 12, 15] // Included Portfolio (10) here as well
+    'front end': [7, 10, 12, 15] 
   };
 
   const filteredProjects = projects.filter(project => 
     filterMap[activeTab]?.includes(project.id)
   );
 
-  // Check if device is mobile
+  const displayProjects = activeTab === 'figma' ? figmaProjects : filteredProjects;
+
   useEffect(() => {
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-
     checkIsMobile();
     window.addEventListener("resize", checkIsMobile);
     return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
-  // Initialize active indices for each project
   useEffect(() => {
     const initialIndices = {};
-    projects.forEach((project) => {
+    [...projects, ...figmaProjects].forEach((project) => {
       initialIndices[project.id] = 0;
     });
     setActiveIndices(initialIndices);
   }, []);
 
+  // --- CAROUSEL NAVIGATION ---
   const handleNextSlide = (projectId, totalSlides) => {
     setActiveIndices((prev) => ({
       ...prev,
-      [projectId]: (prev[projectId] + 1) % totalSlides,
+      [projectId]: ((prev[projectId] || 0) + 1) % totalSlides,
     }));
   };
 
   const handlePrevSlide = (projectId, totalSlides) => {
     setActiveIndices((prev) => ({
       ...prev,
-      [projectId]: (prev[projectId] - 1 + totalSlides) % totalSlides,
+      [projectId]: ((prev[projectId] || 0) - 1 + totalSlides) % totalSlides,
     }));
   };
 
@@ -222,6 +269,23 @@ const Projects = ({ darkMode }) => {
       ...prev,
       [projectId]: index,
     }));
+  };
+
+  // --- LIGHTBOX NAVIGATION ---
+  const openLightbox = (images, index) => {
+    setLightboxImages(images);
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const nextLightboxImage = (e) => {
+    e.stopPropagation();
+    setLightboxIndex((prev) => (prev + 1) % lightboxImages.length);
+  };
+
+  const prevLightboxImage = (e) => {
+    e.stopPropagation();
+    setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length);
   };
 
   const openWithSpinner = (e, liveLink) => {
@@ -235,22 +299,77 @@ const Projects = ({ darkMode }) => {
       ref={sectionRef}
       className={`py-16 min-h-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white' : 'bg-gray-50'}`}
     >
+      {/* --- LIGHTBOX (WITH NAVIGATION) --- */}
+      <AnimatePresence>
+        {lightboxOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-4"
+            onClick={() => setLightboxOpen(false)}
+          >
+            {/* Close Button */}
+            <button
+              className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all border border-white/10 z-50"
+              onClick={() => setLightboxOpen(false)}
+            >
+              <FiX size={24} />
+            </button>
+
+            {/* Previous Button */}
+            <button
+              className="absolute left-4 md:left-8 text-white p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all z-50"
+              onClick={prevLightboxImage}
+            >
+              <FiChevronLeft size={32} />
+            </button>
+
+            {/* Image */}
+            <motion.img
+              key={lightboxIndex} // Key change triggers animation
+              src={lightboxImages[lightboxIndex]}
+              alt="Full View"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            />
+
+            {/* Next Button */}
+            <button
+              className="absolute right-4 md:right-8 text-white p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all z-50"
+              onClick={nextLightboxImage}
+            >
+              <FiChevronRight size={32} />
+            </button>
+            
+            {/* Counter */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 bg-black/50 px-4 py-1 rounded-full text-sm">
+              {lightboxIndex + 1} / {lightboxImages.length}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-16">
           <motion.h2
-            className={`text-4xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}
+            className={`text-4xl md:text-5xl font-bold mb-6 tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true, margin: "-100px" }}
           >
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-blue-500 to-purple-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-600">
               Featured Projects
             </span>
           </motion.h2>
           <motion.p
-            className={`max-w-2xl mx-auto ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}
+            className={`max-w-2xl mx-auto text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -260,7 +379,7 @@ const Projects = ({ darkMode }) => {
           </motion.p>
         </div>
 
-        {/* --- NAVIGATION TABS (From JourneySection UI) --- */}
+        {/* --- NAVIGATION TABS (REVERTED TO ORIGINAL STYLE) --- */}
         <motion.div
           className="flex justify-center mb-12"
           initial={{ opacity: 0, y: 20 }}
@@ -283,7 +402,7 @@ const Projects = ({ darkMode }) => {
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
-                {tab === 'figma' ? 'Figma Conversions' : tab}
+                {tab === 'figma' ? 'Figma to Code' : tab}
               </motion.button>
             ))}
           </div>
@@ -291,165 +410,190 @@ const Projects = ({ darkMode }) => {
 
         {/* --- PROJECTS GRID --- */}
         <AnimatePresence mode="wait">
-          {activeTab === 'figma' ? (
-             // --- EMPTY STATE FOR FIGMA ---
-            <motion.div
-              key="empty-state"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="flex flex-col items-center justify-center py-20"
-            >
-              <div className={`p-6 rounded-full mb-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-xl`}>
-                <FaFigma className="text-6xl text-purple-500" />
-              </div>
-              <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                Coming Soon
-              </h3>
-              <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Pixel-perfect Figma to Code conversions are being updated.
-              </p>
-            </motion.div>
-          ) : (
-            // --- ACTIVE PROJECTS GRID ---
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            >
-              {filteredProjects.map((project, index) => (
-                <motion.div
-                  key={project.id}
-                  className={`rounded-xl shadow-lg overflow-hidden group border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ y: -5 }}
-                >
-                  {/* Carousel Container */}
-                  <div className="relative overflow-hidden h-48 bg-gray-900">
-                    <div
-                      className="flex transition-transform duration-500 ease-in-out h-full"
-                      style={{
-                        transform: `translateX(-${
-                          activeIndices[project.id] * 100
-                        }%)`,
-                      }}
-                    >
-                      {project.images.map((image, imgIndex) => (
-                        <div
-                          key={imgIndex}
-                          className="min-w-full h-full flex-shrink-0"
-                        >
-                          <img
-                            src={image}
-                            alt={`${project.title} screenshot ${imgIndex + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Navigation Buttons */}
-                    {!isMobile && (
-                      <>
-                        <button
-                          className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePrevSlide(project.id, project.images.length);
-                          }}
-                        >
-                          <FiChevronLeft size={20} />
-                        </button>
-                        <button
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleNextSlide(project.id, project.images.length);
-                          }}
-                        >
-                          <FiChevronRight size={20} />
-                        </button>
-                      </>
-                    )}
-                    {/* Indicators */}
-                    <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-2 z-10">
-                      {project.images.map((_, indicatorIndex) => (
-                        <button
-                          key={indicatorIndex}
-                          className={`${isMobile ? 'w-3 h-3' : 'w-2 h-2'} rounded-full transition-all duration-300 ${
-                            indicatorIndex === activeIndices[project.id] 
-                              ? 'bg-white scale-110' 
-                              : 'bg-white/40 hover:bg-white/70'
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleIndicatorClick(project.id, indicatorIndex);
-                          }}
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
+          >
+            {displayProjects.map((project, index) => (
+              <motion.div
+                key={project.id}
+                className={`flex flex-col rounded-2xl overflow-hidden group border transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${
+                  darkMode 
+                    ? 'bg-[#111827] border-gray-800 shadow-black/50 hover:shadow-blue-900/10 hover:border-gray-700' 
+                    : 'bg-white border-gray-100 shadow-xl shadow-gray-200/50 hover:shadow-blue-100/50'
+                }`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                {/* 1. CAROUSEL SECTION */}
+                <div className="relative overflow-hidden h-64 bg-gray-900">
+                  <div
+                    className="flex transition-transform duration-500 ease-out h-full"
+                    style={{
+                      transform: `translateX(-${(activeIndices[project.id] || 0) * 100}%)`,
+                    }}
+                  >
+                    {project.images.map((image, imgIndex) => (
+                      <div key={imgIndex} className="min-w-full h-full flex-shrink-0">
+                        <ImageWithLoader 
+                          src={image} 
+                          alt={`${project.title} screenshot ${imgIndex + 1}`}
+                          className="w-full h-full object-cover object-top"
                         />
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
 
-                  {/* Project Content */}
-                  <div className="p-6">
-                    <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  {/* Desktop Nav Controls */}
+                  {!isMobile && project.images.length > 1 && (
+                    <>
+                      <button
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePrevSlide(project.id, project.images.length);
+                        }}
+                      >
+                        <FiChevronLeft size={20} />
+                      </button>
+                      <button
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleNextSlide(project.id, project.images.length);
+                        }}
+                      >
+                        <FiChevronRight size={20} />
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* Indicators (FIXED VISIBILITY) */}
+                  <div className="absolute bottom-3 left-0 right-0 flex justify-center space-x-2 z-10">
+                    {project.images.map((_, indicatorIndex) => (
+                      <button
+                        key={indicatorIndex}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          indicatorIndex === (activeIndices[project.id] || 0)
+                            ? 'bg-blue-500 w-6' // Active Blue
+                            : darkMode ? 'bg-white/40 w-2 hover:bg-white/60' : 'bg-gray-300 w-2 hover:bg-gray-400' // Dark Gray in Light mode
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleIndicatorClick(project.id, indicatorIndex);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. CARD CONTENT */}
+                <div className="p-7 flex flex-col flex-grow relative">
+                  <div className="flex justify-between items-start mb-3 gap-3">
+                    <h3 className={`text-xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       {project.title}
                     </h3>
-                    <p className={`text-sm mb-4 line-clamp-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {project.description}
-                    </p>
                     
-                    {/* Tools Section */}
-                    <div className="mb-4">
-                      <div className="flex flex-wrap gap-2">
-                        {project.tools.map((tool, toolIndex) => {
-                          const toolConfig = toolIcons[tool];
-                          if (!toolConfig) return null;
-                          
-                          const IconComponent = toolConfig.icon;
-                          return (
-                            <div
-                              key={toolIndex}
-                              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                                darkMode 
-                                  ? 'border-gray-700 bg-gray-700/50 text-gray-300' 
-                                  : 'border-gray-200 bg-gray-50 text-gray-600'
-                              }`}
-                            >
-                              <IconComponent className={`${toolConfig.color}`} />
-                              <span>{toolNames[tool]}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end mt-4 pt-4 border-t border-dashed border-gray-200 dark:border-gray-700">
-                      <a
-                        href={project.liveLink}
-                        onClick={(e) => openWithSpinner(e, project.liveLink)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`inline-flex items-center text-sm font-semibold transition-colors duration-200 ${
-                          darkMode 
-                            ? 'text-blue-400 hover:text-blue-300' 
-                            : 'text-blue-600 hover:text-blue-700'
-                        }`}
-                      >
-                        Live Demo <FiExternalLink className="ml-1.5" />
-                      </a>
+                    {/* PREMIUM PRICE BADGE */}
+                    {activeTab === 'figma' && (
+                       <div className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
+                         darkMode 
+                           ? 'bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/20 text-green-400' 
+                           : 'bg-green-50 border-green-200 text-green-700'
+                       }`}>
+                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                         ₹10k Project
+                       </div>
+                    )}
+                  </div>
+                  
+                  <p className={`text-sm leading-relaxed mb-6 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {project.description}
+                  </p>
+                  
+                  {/* Tools Section (ALIGNED & UPDATED) */}
+                  <div className="mb-6">
+                    <div className="flex flex-wrap gap-2">
+                      {project.tools.map((tool, toolIndex) => {
+                        const toolConfig = toolIcons[tool];
+                        if (!toolConfig) return null;
+                        const IconComponent = toolConfig.icon;
+                        return (
+                          <div
+                            key={toolIndex}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${
+                              darkMode 
+                                ? `bg-gray-800/50 border-gray-700/50 text-gray-300 hover:bg-gray-800 hover:border-gray-600` 
+                                : `bg-gray-50 border-gray-100 text-gray-600 hover:bg-white hover:shadow-sm`
+                            }`}
+                          >
+                            <IconComponent className={`${toolConfig.color} text-sm`} />
+                            <span>{toolNames[tool]}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
+
+                  <div className="mt-auto"></div>
+
+                  {/* 3. MOBILE THUMBNAILS (Rectangular & Big) */}
+                  {activeTab === 'figma' && project.mobileThumbnails && (
+                    <div className="mb-6 pt-5 border-t border-dashed border-gray-200 dark:border-gray-800">
+                      <div className="flex items-center justify-between mb-3">
+                         <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                           <FiLayers className="text-blue-500" /> Figma Design Frames
+                         </div>
+                         <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">Scroll →</span>
+                      </div>
+                      
+                      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+                         {project.mobileThumbnails.map((mobImg, mIdx) => (
+                           <div 
+                              key={mIdx}
+                              className="relative flex-shrink-0 w-20 aspect-[9/16] rounded-md overflow-hidden cursor-pointer snap-start border border-gray-200 dark:border-gray-700 group/thumb"
+                              onClick={() => openLightbox(project.mobileThumbnails, mIdx)}
+                           >
+                             <div className="absolute inset-0 bg-black/0 group-hover/thumb:bg-black/20 transition-colors z-10 flex items-center justify-center">
+                               <FiMaximize2 className="text-white opacity-0 group-hover/thumb:opacity-100 scale-75 transition-all" />
+                             </div>
+                             <ImageWithLoader 
+                               src={mobImg} 
+                               alt="Mobile UI" 
+                               className="w-full h-full object-cover object-top"
+                             />
+                           </div>
+                         ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 4. FOOTER: LIVE LINK */}
+                  <div className={`pt-5 border-t border-gray-100 dark:border-gray-800 flex justify-end`}>
+                    <a
+                      href={project.liveLink}
+                      onClick={(e) => openWithSpinner(e, project.liveLink)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 ${
+                        darkMode 
+                          ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/20' 
+                          : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200'
+                      }`}
+                    >
+                      Live Demo <FiExternalLink />
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         </AnimatePresence>
       </div>
     </section>
