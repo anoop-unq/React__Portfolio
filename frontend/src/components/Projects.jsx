@@ -75,8 +75,8 @@ const Projects = ({ darkMode }) => {
   const figmaProjects = [
     {
       id: 101, 
-      title: "Adit (Audit Dashboard)",
-      description: "A premium Figma-to-Code conversion project charged at ₹10,000 for its complexity and precision. I delivered 100% pixel-perfect accuracy, matching every color gradient, button state, and layout model exactly as provided in the design files. It features a fully responsive implementation of static data with a professional, natural feel.",
+      title: "Audit (Audit Dashboard)",
+      description: "A premium Figma-to-Code conversion project charged at 8,000 for its complexity and precision. I delivered 100% pixel-perfect accuracy, matching every color gradient, button state, and layout model exactly as provided in the design files. It features a fully responsive implementation of static data with a professional, natural feel.",
       liveLink: "https://audit-ruby-one.vercel.app/",
       images: [assets.figmaD1, assets.figmaD2, assets.figmaD3, assets.figmaD4, assets.figmaD5],
       mobileThumbnails: [
@@ -84,7 +84,7 @@ const Projects = ({ darkMode }) => {
         assets.figmaA5, assets.figmaA6, assets.figmaA7, assets.figmaA8, assets.figmaA9
       ],
       // UPDATED: Removed UI/UX, Added CSS as requested
-      tools: ['figma', 'react', 'css'] 
+      tools: ['figma', 'react','tailwind', 'css'] 
     },
   ];
 
@@ -379,7 +379,7 @@ const Projects = ({ darkMode }) => {
           </motion.p>
         </div>
 
-        {/* --- NAVIGATION TABS (REVERTED TO ORIGINAL STYLE) --- */}
+        {/* --- NAVIGATION TABS --- */}
         <motion.div
           className="flex justify-center mb-12"
           initial={{ opacity: 0, y: 20 }}
@@ -432,7 +432,8 @@ const Projects = ({ darkMode }) => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 {/* 1. CAROUSEL SECTION */}
-                <div className="relative overflow-hidden h-64 bg-gray-900">
+                {/* FIX FOR IMAGE ISSUE: Used aspect-video for better ratio */}
+                <div className="relative overflow-hidden aspect-video bg-gray-900">
                   <div
                     className="flex transition-transform duration-500 ease-out h-full"
                     style={{
@@ -440,7 +441,15 @@ const Projects = ({ darkMode }) => {
                     }}
                   >
                     {project.images.map((image, imgIndex) => (
-                      <div key={imgIndex} className="min-w-full h-full flex-shrink-0">
+                      <div 
+                        key={imgIndex} 
+                        // =========================================================================
+                        // FIX: 'flex: 0 0 100%' FORCES the slide to be exactly 100% of the parent width
+                        // This prevents any "second image" or "half image" issues.
+                        // =========================================================================
+                        className="w-full h-full flex-shrink-0"
+                        style={{ flex: '0 0 100%' }} 
+                      >
                         <ImageWithLoader 
                           src={image} 
                           alt={`${project.title} screenshot ${imgIndex + 1}`}
@@ -474,7 +483,7 @@ const Projects = ({ darkMode }) => {
                     </>
                   )}
                   
-                  {/* Indicators (FIXED VISIBILITY) */}
+                  {/* Indicators */}
                   <div className="absolute bottom-3 left-0 right-0 flex justify-center space-x-2 z-10">
                     {project.images.map((_, indicatorIndex) => (
                       <button
@@ -502,14 +511,14 @@ const Projects = ({ darkMode }) => {
                     
                     {/* PREMIUM PRICE BADGE */}
                     {activeTab === 'figma' && (
-                       <div className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                         darkMode 
-                           ? 'bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/20 text-green-400' 
-                           : 'bg-green-50 border-green-200 text-green-700'
-                       }`}>
-                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                         ₹10k Project
-                       </div>
+                        <div className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
+                          darkMode 
+                            ? 'bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/20 text-green-400' 
+                            : 'bg-green-50 border-green-200 text-green-700'
+                        }`}>
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                          8k Project
+                        </div>
                     )}
                   </div>
                   
@@ -517,9 +526,10 @@ const Projects = ({ darkMode }) => {
                     {project.description}
                   </p>
                   
-                  {/* Tools Section (ALIGNED & UPDATED) */}
+                  {/* Tools Section */}
+                  {/* FIX FOR SKILLS WRAPPING: flex-nowrap + overflow-x-auto */}
                   <div className="mb-6">
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-nowrap gap-1.5 overflow-x-auto hide-scroll pb-1">
                       {project.tools.map((tool, toolIndex) => {
                         const toolConfig = toolIcons[tool];
                         if (!toolConfig) return null;
@@ -527,7 +537,8 @@ const Projects = ({ darkMode }) => {
                         return (
                           <div
                             key={toolIndex}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${
+                            // Added flex-shrink-0 and whitespace-nowrap to FORCE single line
+                            className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors border whitespace-nowrap ${
                               darkMode 
                                 ? `bg-gray-800/50 border-gray-700/50 text-gray-300 hover:bg-gray-800 hover:border-gray-600` 
                                 : `bg-gray-50 border-gray-100 text-gray-600 hover:bg-white hover:shadow-sm`
@@ -547,29 +558,29 @@ const Projects = ({ darkMode }) => {
                   {activeTab === 'figma' && project.mobileThumbnails && (
                     <div className="mb-6 pt-5 border-t border-dashed border-gray-200 dark:border-gray-800">
                       <div className="flex items-center justify-between mb-3">
-                         <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
-                           <FiLayers className="text-blue-500" /> Figma Design Frames
-                         </div>
-                         <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">Scroll →</span>
+                          <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                            <FiLayers className="text-blue-500" /> Figma Design Frames
+                          </div>
+                          <span className="text-[10px] text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">Scroll →</span>
                       </div>
                       
-                      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
-                         {project.mobileThumbnails.map((mobImg, mIdx) => (
-                           <div 
+                      <div className="flex gap-3 overflow-x-auto pb-2 hide-scroll snap-x">
+                          {project.mobileThumbnails.map((mobImg, mIdx) => (
+                            <div 
                               key={mIdx}
                               className="relative flex-shrink-0 w-20 aspect-[9/16] rounded-md overflow-hidden cursor-pointer snap-start border border-gray-200 dark:border-gray-700 group/thumb"
                               onClick={() => openLightbox(project.mobileThumbnails, mIdx)}
-                           >
-                             <div className="absolute inset-0 bg-black/0 group-hover/thumb:bg-black/20 transition-colors z-10 flex items-center justify-center">
-                               <FiMaximize2 className="text-white opacity-0 group-hover/thumb:opacity-100 scale-75 transition-all" />
-                             </div>
-                             <ImageWithLoader 
-                               src={mobImg} 
-                               alt="Mobile UI" 
-                               className="w-full h-full object-cover object-top"
-                             />
-                           </div>
-                         ))}
+                            >
+                              <div className="absolute inset-0 bg-black/0 group-hover/thumb:bg-black/20 transition-colors z-10 flex items-center justify-center">
+                                <FiMaximize2 className="text-white opacity-0 group-hover/thumb:opacity-100 scale-75 transition-all" />
+                              </div>
+                              <ImageWithLoader 
+                                src={mobImg} 
+                                alt="Mobile UI" 
+                                className="w-full h-full object-cover object-top"
+                              />
+                            </div>
+                          ))}
                       </div>
                     </div>
                   )}
